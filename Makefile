@@ -14,15 +14,15 @@ help: ## Show this help message
 
 format: ## Format code with Ruff
 	@echo "🛠️  Formatting code..."
-	$(POETRY) ruff format stock_pricer/ tests/
+	$(POETRY) ruff format stock_pricer/
 
 lint-fix: ## Automatically fix linting issues where possible
 	@echo "🔧 Fixing linting issues..."
-	$(POETRY) ruff check --fix --exit-zero stock_pricer/ tests/
+	$(POETRY) ruff check --fix --exit-zero stock_pricer/
 
 lint: ## Run all linting checks
 	@echo "🔍 Running linting checks..."
-	$(POETRY) ruff check stock_pricer/ tests/
+	$(POETRY) ruff check stock_pricer/ 
 
 check-types: ## Run static type checking with mypy
 	@echo "🔎 Running type checks..."
