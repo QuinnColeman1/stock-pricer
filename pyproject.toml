@@ -2,7 +2,7 @@
 name = "stock-pricer"
 version = "0.1.0"
 description = "A script to fetch & price stocks with trend detection and Monte Carlo simulations"
-authors = ["quinn <your.email@example.com>"]
+authors = ["Quinn Coleman <quinn.e.coleman@gmail.com>"]
 readme = "README.md"
 packages = [{include = "stock_pricer"}]
 
@@ -109,9 +109,8 @@ max-complexity = 10
 
 # Import sorting configuration
 [tool.ruff.lint.isort]
-# Use one blank line for imports.
-lines-after-imports = 1
-# How to handle type imports.
+# lines-after-imports is left at ruff's default (-1) so `ruff check` agrees with `ruff format`
+# (two blank lines before a def/class, one otherwise).
 known-first-party = ["stock_pricer"]
 
 # Per-file ignores

@@ -138,7 +138,7 @@ def page_inputs() -> None:
                 st.success(f"✅ Analysis complete for {ticker}!")
 
                 # Show trend analysis summary
-                if hasattr(predictor, "trend_info"):
+                if predictor.trend_info:
                     col1, col2, col3 = st.columns(3)
 
                     with col1:
@@ -223,7 +223,7 @@ def page_price_analysis() -> None:
     predictions = st.session_state.predictions
 
     # Trend Analysis Section
-    if hasattr(predictor, "trend_info"):
+    if predictor.trend_info:
         st.header("🔍 Trend Analysis")
 
         col1, col2, col3, col4 = st.columns(4)
@@ -254,7 +254,7 @@ def page_price_analysis() -> None:
     historical_data = predictor.data.copy()
 
     # Calculate trend line for historical data
-    if hasattr(predictor, "trend_info"):
+    if predictor.trend_info:
         n = min(60, len(historical_data))
         recent_data = historical_data.iloc[-n:]
         x = np.arange(n)
@@ -274,7 +274,7 @@ def page_price_analysis() -> None:
     )
 
     # Add trend line
-    if hasattr(predictor, "trend_info"):
+    if predictor.trend_info:
         fig_hist.add_trace(
             go.Scatter(
                 x=recent_data.index,
@@ -389,7 +389,7 @@ def page_price_analysis() -> None:
     )
 
     # Add trend projection if available
-    if hasattr(predictor, "trend_info"):
+    if predictor.trend_info:
         trend_projection = predictor.current_price * np.exp(
             predictor.trend_info["daily_trend"] * np.arange(st.session_state.days + 1)
         )
@@ -694,7 +694,7 @@ def main() -> None:
         st.sidebar.write(f"**Simulations:** {st.session_state.simulations:,}")
         st.sidebar.write(f"**Trend Weight:** {st.session_state.trend_weight}")
 
-        if hasattr(st.session_state.predictor, "trend_info"):
+        if st.session_state.predictor.trend_info:
             trend = st.session_state.predictor.trend_info["daily_trend"]
             if trend < -0.001:
                 st.sidebar.error("⚠️ Declining Trend")

@@ -15,16 +15,16 @@ with open("stock_pricer/__init__.py") as fp:
 setup(
     name="stock-pricer",
     version=version["__version__"],
-    author="quinn",
-    author_email="your.email@example.com",
+    author="Quinn Coleman",
+    author_email="quinn.e.coleman@gmail.com",
     description="A script to fetch & price stocks with trend detection and Monte Carlo simulations",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/stock_pricer",
+    url="https://github.com/QuinnColeman1/stock-pricer",
     project_urls={
-        "Bug Tracker": "https://github.com/yourusername/stock_pricer/issues",
-        "Documentation": "https://github.com/yourusername/stock_pricer/blob/main/README.md",
-        "Source Code": "https://github.com/yourusername/stock_pricer",
+        "Bug Tracker": "https://github.com/QuinnColeman1/stock-pricer/issues",
+        "Documentation": "https://github.com/QuinnColeman1/stock-pricer/blob/main/README.md",
+        "Source Code": "https://github.com/QuinnColeman1/stock-pricer",
     },
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -66,7 +66,6 @@ setup(
     entry_points={
         "console_scripts": [
             "stock-pricer=stock_pricer.fetch_stocks:main",
-            "stock-pricer-web=stock_pricer.streamlit_app:main",
         ],
     },
     include_package_data=True,

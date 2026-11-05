@@ -356,13 +356,17 @@ class StockPredictor:
                 - final_percentiles: dict with 5th, 25th, 50th, 75th, 95th percentiles of final prices
 
         Raises:
-            ValueError: If parameters are invalid or simulation fails
+            ValueError: If parameters are invalid, current_price is not positive,
+                or simulation fails
         """
         # Input validation
         if days <= 0:
             raise ValueError("Number of days must be positive")
         if num_simulations <= 0:
             raise ValueError("Number of simulations must be positive")
+        # GBM works on log prices, so a zero/negative/NaN start price would yield all-NaN paths
+        if not np.isfinite(self.current_price) or self.current_price <= 0:
+            raise ValueError("Current price must be a positive number. Run fetch_data() first.")
 
         # Ensure parameters are calibrated
         if any(param is None for param in [self.mu, self.sigma, self.theta]):
@@ -376,7 +380,7 @@ class StockPredictor:
         # Initialize price paths
         try:
             prices: FloatArray = np.zeros((num_simulations, days + 1), dtype=np.float64)
-            prices[:, 0] = float(self.current_price) if self.current_price is not None else 0.0
+            prices[:, 0] = float(self.current_price)
         except Exception as e:
             error_msg = f"Failed to initialize price paths: {str(e)}"
             raise ValueError(error_msg) from e
@@ -393,7 +397,7 @@ class StockPredictor:
         initial_trend_boost = 0.0
         trend_decay = 1.0
 
-        if use_trend_adjustment and hasattr(self, "trend_info"):
+        if use_trend_adjustment and self.trend_info:
             try:
                 trend_decay = 0.95  # Trend impact decays by 5% per day
                 initial_trend_boost = float(
@@ -408,7 +412,7 @@ class StockPredictor:
         mu = float(self.mu) if self.mu is not None else 0.0
         sigma = float(self.sigma) if self.sigma is not None else 0.0
         theta = float(self.theta) if self.theta is not None else 0.1
-        current_price = float(self.current_price) if self.current_price is not None else 0.0
+        current_price = float(self.current_price)
 
         # Simulate price paths
         try:
@@ -419,7 +423,7 @@ class StockPredictor:
 
                 # Volatility can increase in strong trends (volatility clustering)
                 volatility_multiplier = 1.0
-                if hasattr(self, "recent_trend") and abs(self.recent_trend) > 0.001:
+                if abs(self.recent_trend) > 0.001:
                     volatility_multiplier = 1 + 0.2 * min(t / max(1, days), 1)  # Up to 20% increase
 
                 diffusion = sigma * volatility_multiplier * np.sqrt(dt) * random_shocks[:, t]
@@ -495,8 +499,10 @@ class StockPredictor:
         print(f"Sigma (Annual Volatility): {self.sigma:.4f} ({self.sigma * 100:.2f}%)")
         print(f"Theta (Mean Reversion): {self.theta:.4f}")
 
-        # Trend analysis
-        if hasattr(self, "trend_info") and isinstance(self.trend_info, dict):
+        # Trend analysis (trend_info is {} until calibrate_parameters() has run)
+        if not self.trend_info:
+            print("\n⚠️  No trend analysis available. Run calibrate_parameters() first.")
+        else:
             print("\n=== Trend Analysis ===")
             try:
                 daily_trend = self.trend_info.get("daily_trend", 0.0)
@@ -622,11 +628,7 @@ class StockPredictor:
                 )
 
                 # Trend-based insights
-                if (
-                    hasattr(self, "trend_info")
-                    and isinstance(self.trend_info, dict)
-                    and self.trend_info.get("daily_trend", 0) < -0.001
-                ):
+                if self.trend_info.get("daily_trend", 0.0) < -0.001:
                     print("\n⚠️  Note: Predictions account for the detected DECLINING trend.")
                     print("   The model gives more weight to recent negative performance.")
         except (KeyError, IndexError, TypeError, ValueError) as e:
@@ -734,12 +736,7 @@ def plot_predictions(predictor: "StockPredictor", predictions: dict, days: int =
             )
 
         # Add trend line if available
-        if (
-            hasattr(predictor, "trend_info")
-            and isinstance(predictor.trend_info, dict)
-            and "daily_trend" in predictor.trend_info
-            and hasattr(predictor, "current_price")
-        ):
+        if "daily_trend" in predictor.trend_info:
             try:
                 daily_trend = float(predictor.trend_info["daily_trend"])
                 trend_line = float(predictor.current_price) * np.exp(daily_trend * np.arange(days + 1))
